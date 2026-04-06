@@ -1,0 +1,21 @@
+Review-Only Notice
+==================
+
+This package is provided for artifact evaluation, code inspection, and reproducibility checks.
+
+Permissions
+-----------
+
+- You may inspect and run the contents for evaluation purposes.
+- You may modify local copies for testing.
+
+Restrictions
+------------
+
+- Do not redistribute the package outside the evaluation workflow.
+- No endorsement or attribution rights are granted.
+
+Disclaimer
+----------
+
+The package is provided "as is" without warranties or guarantees of any kind.
