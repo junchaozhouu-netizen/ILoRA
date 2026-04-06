@@ -1,0 +1,74 @@
+experiment:
+  name: ILoRA_cv_baseline
+  modality: vision
+  notes: "Baseline configuration for CV tasks with heterogeneous ranks."
+
+hardware:
+  cuda_device: "0"
+  precision: bf16
+  gradient_accumulation_steps: 1
+  num_workers: 8
+
+data:
+  dataset: cifar10
+  data_dir: ./data/cv
+  input_size: 224
+  distribution: NON-IID
+  alpha: 0.5
+  num_clients: 10
+  train_split: 0.9
+  batch_size: 64
+  test_batch_size: 128
+  num_classes: 10
+
+model:
+  backbone: vit-base-patch16-224
+  checkpoint: vit-base-patch16-224
+  classifier_dropout: 0.0
+  freeze_backbone: false
+
+lora:
+  algorithm: ILoRA
+  r_client: 4
+  r_server: 8
+  alpha: 32
+  dropout: 0.1
+  target_modules:
+    - query
+    - value
+  scale_factor: 0.5
+  heterogeneous_rank: true
+  heterogeneous_rank_clients: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+
+training:
+  optimizer: SGD
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0
+  local_epochs: 1
+  global_rounds: 200
+  warmup_ratio: 0.05
+  scheduler: cosine
+  clip_grad_norm: 5.0
+
+federation:
+  fraction_fit: 0.5
+  min_fit_clients: 10
+  min_eval_clients: 5
+  min_available_clients: 10
+  aggregation: FedAvg
+  use_control_variates: false
+
+evaluation:
+  frequency: 1
+  metrics:
+    - accuracy
+    - top5
+    - loss
+  checkpoint_dir: ./artifacts/cv
+  save_interval: 5
+
+logging:
+  log_dir: ./runs/cv
+  stdout_interval: 1
+  tensorboard: true

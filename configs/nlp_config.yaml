@@ -1,0 +1,75 @@
+experiment:
+  name: ILoRA_nlp_adamw06
+  modality: text
+  notes: "NLP configuration for heterogeneous clients using AdamW."
+
+hardware:
+  cuda_device: "0,1"
+  precision: fp16
+  gradient_accumulation_steps: 2
+  num_workers: 4
+
+data:
+  dataset: qnli
+  data_dir: ./data/nlp
+  tokenizer: roberta-large
+  max_seq_length: 256
+  distribution: NON-IID
+  alpha: 0.6
+  num_clients: 16
+  batch_size: 16
+  eval_batch_size: 64
+  num_labels: 2
+
+model:
+  backbone: roberta-large
+  init_checkpoint: roberta-large
+  classifier_dropout: 0.1
+  freeze_embeddings: true
+
+lora:
+  algorithm: ILoRA
+  r_client: 8
+  r_server: 12
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - query
+    - value
+  scale_factor: 0.4
+  heterogeneous_rank: true
+  heterogeneous_rank_clients: [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34]
+
+training:
+  optimizer: AdamW
+  lr: 3.0e-5
+  weight_decay: 0.01
+  betas: [0.9, 0.98]
+  eps: 1.0e-8
+  local_epochs: 1
+  global_rounds: 300
+  warmup_ratio: 0.1
+  scheduler: linear
+  max_grad_norm: 1.0
+
+federation:
+  fraction_fit: 0.5
+  min_fit_clients: 12
+  min_eval_clients: 8
+  min_available_clients: 16
+  aggregation: FedAvg
+  use_control_variates: true
+
+evaluation:
+  frequency: 2
+  metrics:
+    - accuracy
+    - f1
+    - loss
+  checkpoint_dir: ./artifacts/nlp
+  save_interval: 10
+
+logging:
+  log_dir: ./runs/nlp
+  stdout_interval: 1
+  tensorboard: true

@@ -1,0 +1,85 @@
+experiment:
+  name: ILoRA_ablation_suite
+  description: "Control study toggling ILoRA components under client drift."
+  seed: 42
+
+common:
+  dataset: cifar10
+  num_clients: 8
+  distribution: NON-IID
+  alpha: 0.4
+  global_rounds: 100
+  local_epochs: 1
+  batch_size: 64
+
+variants:
+  - id: base_lora
+    enabled_components:
+      qr_init: false
+      heterogeneous_rank: false
+      control_variates: false
+      adaptive_scale: false
+    lora_r_client: 4
+    optimizer: SGD
+    lr: 0.01
+
+  - id: qr_initialization
+    enabled_components:
+      qr_init: true
+      heterogeneous_rank: false
+      control_variates: false
+      adaptive_scale: false
+    lora_r_client: 4
+    optimizer: SGD
+    lr: 0.01
+
+  - id: heterogeneous_rank
+    enabled_components:
+      qr_init: true
+      heterogeneous_rank: true
+      control_variates: false
+      adaptive_scale: false
+    lora_r_client: 4
+    heterogeneous_rank_clients: [2, 4, 6, 8, 10, 12, 14, 16]
+    optimizer: SGD
+    lr: 0.01
+
+  - id: control_variates
+    enabled_components:
+      qr_init: true
+      heterogeneous_rank: true
+      control_variates: true
+      adaptive_scale: false
+    lora_r_client: 4
+    lambda_reg: 0.01
+    optimizer: AdamW
+    lr: 5.0e-4
+
+  - id: adaptive_scale
+    enabled_components:
+      qr_init: true
+      heterogeneous_rank: true
+      control_variates: true
+      adaptive_scale: true
+    lora_r_client: 4
+    lora_scale_factor: 0.5
+    optimizer: AdamW
+    lr: 5.0e-4
+
+metrics:
+  track:
+    - accuracy
+    - top5
+    - loss
+    - drift_index
+  evaluation_interval: 1
+
+artifacts:
+  output_dir: ./artifacts/ablation
+  save_best_only: true
+  keep_last: 3
+
+logging:
+  log_dir: ./runs/ablation
+  tensorboard: true
+  stdout_interval: 1
